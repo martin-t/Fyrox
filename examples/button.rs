@@ -10,6 +10,8 @@ use fyrox::{
     gui::{
         button::{ButtonBuilder, ButtonMessage},
         message::{MessageDirection, UiMessage},
+        text::TextMessage,
+        text_box::TextBoxBuilder,
         widget::{WidgetBuilder, WidgetMessage},
         UiNode,
     },
@@ -20,6 +22,7 @@ use fyrox::{
 
 struct Game {
     button: Handle<UiNode>,
+    text_box: Handle<UiNode>,
 }
 
 impl Plugin for Game {
@@ -55,6 +58,17 @@ impl Plugin for Game {
                         MessageDirection::ToWidget,
                         new_position,
                     ));
+
+                context.user_interface.send_message(TextMessage::text(
+                    self.text_box,
+                    MessageDirection::ToWidget,
+                    "".to_owned(),
+                ));
+
+                context.user_interface.send_message(WidgetMessage::focus(
+                    self.text_box,
+                    MessageDirection::ToWidget,
+                ));
             }
         }
     }
@@ -81,7 +95,14 @@ impl PluginConstructor for GameConstructor {
             .with_text("Click me!")
             .build(ctx);
 
-        Box::new(Game { button })
+        let text_box = TextBoxBuilder::new(WidgetBuilder::new().with_visibility(false))
+            .build(&mut context.user_interface.build_ctx());
+
+        context
+            .user_interface
+            .send_message(WidgetMessage::focus(text_box, MessageDirection::ToWidget));
+
+        Box::new(Game { button, text_box })
     }
 }
 
